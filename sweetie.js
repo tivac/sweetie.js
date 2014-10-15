@@ -113,6 +113,10 @@ Sweetie.prototype = {
             test = this._tests.shift();
 
         if(!test) {
+            if(this.suite) {
+                this.reporter("suite-done", null, this.suite);
+            }
+
             return this.reporter("finish");
         }
         
