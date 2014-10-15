@@ -61,18 +61,17 @@ Sweetie.prototype = {
         var self = this;
         
         // Rewrite bare test function into something a little nicer
-        this._tests = this._tests.concat(tests.map(function(test) {
-            var fn;
+        this._tests = this._tests.concat(tests.map(function(src) {
+            var test = {};
 
+            test.name  = src.name;
             test.suite = chain;
 
-            if(!test.fn) {
+            if(!src.fn) {
                 return test;
             }
 
-            fn = test.fn;
-
-            test.async = !!fn.length;
+            test.async = !!src.fn.length;
 
             test.fn = function(next) {
                 self.reporter("test", test);
@@ -80,7 +79,7 @@ Sweetie.prototype = {
                 
                 // Doesn't handle async exceptions, but we're ok w/ that
                 try {
-                    fn(next);
+                    src.fn(next);
                 } catch(e) {
                     self.reporter("fail", test, e);
                     
@@ -145,12 +144,12 @@ Sweetie.prototype = {
         test.fn();
         
         this.reporter("test-done", test);
-        
         this._next();
     },
 
     run : function (reporter) {
         this._tests = [];
+        this.suite  = null;
         
         this._collectSuite([], this.env);
         
