@@ -147,7 +147,7 @@ Sweetie.prototype = {
         this._next();
     },
 
-    run : function (reporter) {
+    run : function(reporter) {
         this._tests = [];
         this.suite  = null;
         
