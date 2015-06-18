@@ -1,0 +1,27 @@
+{
+  "name": "sweetie",
+  "version": "1.0.0",
+  "description": "How simple can a test runner be?",
+  "main": "sweetie.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node test/test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tivac/sweetie.js.git"
+  },
+  "keywords": [
+    "test",
+    "mocha",
+    "bdd"
+  ],
+  "author": "Pat Cavit <pcavit@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tivac/sweetie.js/issues"
+  },
+  "homepage": "https://github.com/tivac/sweetie.js"
+}
