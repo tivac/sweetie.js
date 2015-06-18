@@ -4,7 +4,7 @@ var assert  = require("assert"),
     Sweetie = require("../sweetie");
 
 describe("Sweetie", function() {
-    describe("Suite Support", function() {
+    describe(".describe()", function() {
         it("should support adding a suite", function() {
             var s = new Sweetie();
 
@@ -30,6 +30,17 @@ describe("Sweetie", function() {
 
             assert.equal(typeof s.env["1/foo.ಠ_ಠ"], "object");
             assert(Array.isArray(s.env["1/foo.ಠ_ಠ"].__tests));
+        });
+
+        it("should support multiple calls to the same suite", function() {
+            var s = new Sweetie();
+
+            s.describe("one");
+            s.describe("one");
+            s.describe("one");
+
+            assert.equal(typeof s.env.one, "object");
+            assert(Array.isArray(s.env.one.__tests));
         });
 
         it("should support adding nested suites", function() {
