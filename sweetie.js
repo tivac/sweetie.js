@@ -4,10 +4,7 @@
 var Sweetie;
 
 Sweetie = function() {
-    this.env = {
-        __tests : []
-    };
-    
+    this.env = {};
     this.context = this.env;
 };
 
@@ -42,7 +39,11 @@ Sweetie.prototype = {
     },
     
     it : function(name, fn) {
-        this.context.__tests.push({ name : name, fn : fn });
+        this.context.__tests.push({
+            name  : name,
+            fn    : fn,
+            async : fn && !!fn.length
+        });
     },
     
     ok : function(cond, msg) {
@@ -53,7 +54,7 @@ Sweetie.prototype = {
         });
     },
     
-    _collectTests : function (chain, tests) {
+    _collectTests : function(chain, tests) {
         if(!tests.length) {
             return;
         }
@@ -61,17 +62,20 @@ Sweetie.prototype = {
         var self = this;
         
         // Rewrite bare test function into something a little nicer
-        this._tests = this._tests.concat(tests.map(function(src) {
-            var test = {};
+        this._tests = this._tests.concat(tests.map(function(test) {
+            var fn;
 
-            test.name  = src.name;
-            test.suite = chain;
-
-            if(!src.fn) {
+            if(test.__processed) {
                 return test;
             }
 
-            test.async = !!src.fn.length;
+            test.suite = chain;
+
+            if(!test.fn) {
+                return test;
+            }
+
+            fn = test.fn;
 
             test.fn = function(next) {
                 self.reporter("test", test);
@@ -79,7 +83,7 @@ Sweetie.prototype = {
                 
                 // Doesn't handle async exceptions, but we're ok w/ that
                 try {
-                    src.fn(next);
+                    fn(next);
                 } catch(e) {
                     self.reporter("fail", test, e);
                     
@@ -89,11 +93,13 @@ Sweetie.prototype = {
                 }
             };
 
+            test.__processed = true;
+
             return test;
         }));
     },
 
-    _collectSuite : function (chain, suite) {
+    _collectSuite : function(chain, suite) {
         var self = this;
     
         this._collectTests(chain, suite.__tests);
@@ -107,18 +113,25 @@ Sweetie.prototype = {
         });
     },
 
-    _next : function () {
+    _next : function() {
         var self = this,
-            test = this._tests.shift();
+            test = this._tests.shift(),
+            path;
 
         if(!test) {
-            if(this.suite) {
-                this.reporter("suite-done", null, this.suite);
-            }
-
             return this.reporter("finish");
         }
-        
+
+        if(this._filter) {
+            path = test.suite.join(" ") + " " + test.name;
+            
+            if(path.search(this._filter) === -1) {
+                this.reporter("skipped", test);
+
+                return this._next();
+            }
+        }
+
         if(test.suite !== this.suite) {
             if(this.suite) {
                 this.reporter("suite-done", null, this.suite);
@@ -144,13 +157,18 @@ Sweetie.prototype = {
         test.fn();
         
         this.reporter("test-done", test);
+        
         this._next();
     },
 
-    run : function (reporter) {
+    run : function(reporter) {
+        // Reset the world before starting
+        this.env.__tests = [];
+        this.suite  = [];
         this._tests = [];
-        this.suite  = null;
+        this.context = this.env;
         
+        // Go build up the execution plan
         this._collectSuite([], this.env);
         
         this.reporter = (typeof reporter === "function") ? reporter : function() {};
@@ -158,6 +176,10 @@ Sweetie.prototype = {
         this.reporter("start", null, this._tests);
         
         this._next();
+    },
+
+    filter : function(filter) {
+        this._filter = filter ? new RegExp(filter, "i") : false;
     }
 };
 
@@ -166,5 +188,6 @@ if(typeof module !== "undefined" && module.exports) {
 } else {
     global.Sweetie = Sweetie;
 }
-
-}((function() { return this; }())));
+}((function() {
+    return this;
+}())));
