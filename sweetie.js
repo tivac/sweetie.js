@@ -151,9 +151,11 @@ Sweetie.prototype = {
         this._tests = [];
         this.suite  = null;
         
-        this._collectSuite([], this.env);
-        
         this.reporter = (typeof reporter === "function") ? reporter : function() {};
+
+        this.reporter("prep", null, this.env);
+
+        this._collectSuite([], this.env);
         
         this.reporter("start", null, this._tests);
         
