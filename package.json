@@ -27,6 +27,6 @@
   "devDependencies": {
     "getobject": "^0.1.0",
     "istanbul": "^0.3.15",
-    "mocha": "^2.2.5"
+    "mocha": "^2.3.3"
   }
 }
