@@ -17,7 +17,6 @@ describe("Sweetie", function() {
 
         assert.equal(typeof s, "object");
         assert.equal(typeof s.env, "object");
-
-        assert(Array.isArray(s.env.__tests));
+        assert.equal(s.env, s.context);
     });
 });

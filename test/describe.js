@@ -115,23 +115,18 @@ describe("Sweetie", function() {
             });
 
             assert.deepEqual(s.env, {
-                __tests : [{
-                    fn : undefined,
-                    name : "root"
-                }],
+                __tests : [
+                    { name  : "root", fn    : false, async : false }
+                ],
                 one : {
-                    __tests : [{
-                        name : "one",
-                        fn : undefined
-                    }],
+                    __tests : [
+                        { name : "one", fn : false, async : false }
+                    ],
                     two : {
-                        __tests : [{
-                            name : "two",
-                            fn : undefined
-                        }, {
-                            name : "two2",
-                            fn : undefined
-                        }],
+                        __tests : [
+                            { name : "two", fn : false, async : false },
+                            { name : "two2", fn : false, async : false }
+                        ],
                         three : {
                             __tests : []
                         }
@@ -139,10 +134,9 @@ describe("Sweetie", function() {
                     four : {
                         __tests : [],
                         five : {
-                            __tests : [{
-                                name : "five",
-                                fn : undefined
-                            }]
+                            __tests : [
+                                { name : "five", fn : false, async : false }
+                            ]
                         }
                     }
                 }
@@ -175,17 +169,15 @@ describe("Sweetie", function() {
             assert.deepEqual(s.env, {
                 __tests : [],
                 one : {
-                    __tests : [{
-                        name : "one", fn : undefined
-                    }, {
-                        name : "one2", fn : undefined
-                    }],
+                    __tests : [
+                        { name : "one", fn : false, async : false },
+                        { name : "one2", fn : false, async : false }
+                    ],
                     two : {
-                        __tests : [{
-                            name : "two", fn : undefined
-                        }, {
-                            name : "two2", fn : undefined
-                        }]
+                        __tests : [
+                            { name : "two", fn : false, async : false },
+                            { name : "two2", fn : false, async : false }
+                        ]
                     }
                 }
             });
