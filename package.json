@@ -1,6 +1,6 @@
 {
   "name": "sweetie",
-  "version": "0.0.5",
+  "version": "1.0.0",
   "description": "How simple can a test runner be?",
   "main": "sweetie.js",
   "directories": {
