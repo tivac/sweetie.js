@@ -1,8 +1,11 @@
 "use strict";
 
-var assert  = require("assert"),
+var assert = require("assert"),
+    
     Sweetie = require("../sweetie"),
-    reporter = require("./_reporter");
+    
+    reporter = require("./_reporter"),
+    state    = require("./_state");
 
 describe("Sweetie", function() {
     describe(".run()", function() {
@@ -26,7 +29,10 @@ describe("Sweetie", function() {
         it("should clean up the environment before running", function() {
             var s = new Sweetie();
 
-            s.it("test");
+            // One test needs to have a function body to ensure we don't double-process
+            // tests
+            s.it("test", function() { });
+            
             s.it("test2");
 
             s.run(function(state) {
@@ -42,39 +48,79 @@ describe("Sweetie", function() {
                     return;
                 }
 
+                assert(Array.isArray(s._tests));
                 assert.equal(s._tests.length, 0);
-                assert.equal(s.suite, null);
+
+                assert.equal(s.suite, undefined);
             });
         });
 
         it("should report a \"prep\" event", function() {
-            var s = new Sweetie(),
-                e;
+            var s = new Sweetie();
 
-            s.run(function(state) {
-                if(e || state !== "prep") {
-                    return;
-                }
-
-                e = true;
-            });
-
-            assert(e);
+            s.run(state("prep", assert));
         });
 
         it("should report a \"start\" event", function() {
-            var s = new Sweetie(),
-                e;
+            var s = new Sweetie();
 
-            s.run(function(state) {
-                if(e || state !== "start") {
-                    return;
-                }
+            s.run(state("start", assert));
+        });
 
-                e = true;
+        it("should report a \"fail\" event", function() {
+
+        });
+
+        it("should report a \"finish\" event", function() {
+            var s = new Sweetie();
+
+            s.run(state("finish", assert));
+        });
+
+        it("should report a \"skipped\" event", function() {
+            var s = new Sweetie();
+
+            s.it("one");
+
+            s.filter("two");
+
+            s.run(state("skipped", assert));
+        });
+
+        it("should report a \"suite\" event", function() {
+            var s = new Sweetie();
+
+            s.describe("suite", function() {
+                s.it("test");
             });
 
-            assert(e);
+            s.run(state("suite", assert));
+        });
+
+        it("should report a \"suite-done\" event", function() {
+            var s = new Sweetie();
+
+            s.describe("suite", function() {
+                s.it("test");
+            });
+
+            s.run(state("suite-done", assert));
+        });
+
+        it("should report a \"empty\" event", function() {
+            var s = new Sweetie();
+
+            s.it("one");
+
+            s.run(state("empty", assert));
+        });
+
+        it("should report a \"test\" event", function() {
+            var s = new Sweetie();
+
+            s.it("one", function() { });
+
+            s.run(state("test", assert));
         });
 
         it("should structure tests in order", function() {
@@ -89,13 +135,11 @@ describe("Sweetie", function() {
                     return;
                 }
 
-                assert.deepEqual(args, [{
-                    name : "one", suite : []
-                },{
-                    name : "two", suite : []
-                },{
-                    name : "three", suite : []
-                }]);
+                assert.deepEqual(args, [
+                    { name : "one", fn : false, async : false, suite : [] },
+                    { name : "two", fn : false, async : false, suite : [] },
+                    { name : "three", fn : false, async : false, suite : [] }
+                ]);
             });
         });
 
@@ -132,22 +176,15 @@ describe("Sweetie", function() {
                     return;
                 }
 
-                assert.deepEqual(args, [{
-                    name : "t-root", suite : []
-                },{
-                    name : "t-1", suite : [ "s-1" ]
-                },{
-                    name : "t-1-2", suite : [ "s-1" ]
-                },{
-                    name : "t-1-3", suite : [ "s-1" ]
-                },{
-                    name : "t-2", suite : [ "s-1", "s-2" ]
-                },{
-                    name : "t-2-2", suite : [ "s-1", "s-2" ]
-                },{
-                    name : "t-4", suite : [ "s-1", "s-4" ]
-                },{
-                    name : "t-3", suite : [ "s-3" ]
+                assert.deepEqual(args, [
+                    { name : "t-root", fn : false, async : false, suite : [] },
+                    { name : "t-1", fn : false, async : false, suite : [ "s-1" ] },
+                    { name : "t-1-2", fn : false, async : false, suite : [ "s-1" ] },
+                    { name : "t-1-3", fn : false, async : false, suite : [ "s-1" ] },
+                    { name : "t-2", fn : false, async : false, suite : [ "s-1", "s-2" ] },
+                    { name : "t-2-2", fn : false, async : false, suite : [ "s-1", "s-2" ] },
+                    { name : "t-4", fn : false, async : false, suite : [ "s-1", "s-4" ] },
+                    { name : "t-3", fn : false, async : false, suite : [ "s-3" ]
                 }]);
             });
         });
@@ -259,6 +296,25 @@ describe("Sweetie", function() {
                 assert.deepEqual(o, [ "1", "2" ]);
 
                 done();
+            }));
+        });
+
+        it("should only run tests matching the filter (if specified)", function() {
+            var s = new Sweetie(),
+                o = [];
+
+            s.it("foo", function() {
+                o.push("foo");
+            });
+
+            s.it("bar", function() {
+                o.push("bar");
+            });
+
+            s.filter("foo");
+
+            s.run(reporter(function(results) {
+                assert.deepEqual(o, [ "foo" ]);
             }));
         });
     });

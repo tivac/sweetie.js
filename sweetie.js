@@ -4,7 +4,10 @@
 var Sweetie;
 
 Sweetie = function() {
-    this.env = {};
+    this.env = {
+        __tests : []
+    };
+
     this.context = this.env;
 };
 
@@ -41,8 +44,6 @@ Sweetie.prototype = {
     it : function(name, fn) {
         this.context.__tests.push({
             name  : name,
-            fn    : fn,
-            async : fn && !!fn.length
             fn    : fn || false,
             async : (fn && !!fn.length) || false
         });
@@ -121,6 +122,10 @@ Sweetie.prototype = {
             path;
 
         if(!test) {
+            if(this.suite) {
+                this.reporter("suite-done", null, this.suite);
+            }
+
             return this.reporter("finish");
         }
 
@@ -165,16 +170,17 @@ Sweetie.prototype = {
 
     run : function(reporter) {
         // Reset the world before starting
-        this.env.__tests = [];
-        this.suite  = [];
+        this.suite  = undefined;
         this._tests = [];
         this.context = this.env;
         
-        // Go build up the execution plan
-        this._collectSuite([], this.env);
-        
         this.reporter = (typeof reporter === "function") ? reporter : function() {};
         
+        this.reporter("prep", null, this.env);
+
+        // Go build up the execution plan
+        this._collectSuite([], this.env);
+                
         this.reporter("start", null, this._tests);
         
         this._next();
