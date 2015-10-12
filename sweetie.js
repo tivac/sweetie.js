@@ -43,6 +43,8 @@ Sweetie.prototype = {
             name  : name,
             fn    : fn,
             async : fn && !!fn.length
+            fn    : fn || false,
+            async : (fn && !!fn.length) || false
         });
     },
     
